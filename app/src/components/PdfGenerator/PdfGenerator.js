@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-import ProductItem from '../Products/ProductItem';
+import InvoiceItem from '../Invoices/InvoiceItem';
+import "./PdfGenerator.css"
 import ErrorModal from '../UI/ErrorModal';
 import axios from 'axios';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
-const Ingredients = () => {
+const PdfGenerator = () => {
   const [error, setError] = useState();
   const [selectedRows, setSelectedRows] = useState([])
   const [pdfNames, setPdfNames] = useState([])
@@ -48,23 +49,11 @@ const Ingredients = () => {
   }
 
   return (
-    <div className="App">
+    <div className="Base"
+    >
       {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
 
-      {/* <IngredientForm
-        onAddIngredient={addIngredientHandler}
-        loading={isLoading}
-      />
-
-      <section>
-        <Search onLoadIngredients={filteredIngredientsHandler} />
-        <IngredientList
-          ingredients={userIngredients}
-          onRemoveItem={removeIngredientHandler}
-        />
-      </section> */}
       <DataGrid 
-      style={{ height: 400, width: '50%'}}
       rows={rows} 
       columns={columns} 
       checkboxSelection
@@ -84,9 +73,9 @@ const Ingredients = () => {
           addIngredientHandler()
         }}>Contained
       </button>
-      <ul className="products-list">
+      <ul>
         {pdfNames.map(pdfName => (
-          <ProductItem
+          <InvoiceItem
             key={pdfName.id}
             id={pdfName.id}
             fileName={pdfName.fileName}
@@ -122,4 +111,4 @@ const rows = [
   { id: 4, name: 'Stark', amount: 16 },
   { id: 5, name: 'Targaryen', amount: null },
 ];
-export default Ingredients;
+export default PdfGenerator;

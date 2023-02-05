@@ -1,10 +1,9 @@
 import React, { useContext } from 'react';
 
 import Card from '../UI/Card';
-// import { ProductsContext } from '../../context/products-context';
-import './ProductItem.css';
+import './InvoiceItem.css';
 
-const ProductItem = props => {
+const InvoiceItem = props => {
 
   const baseURL = 'http://localhost:8080/api/pdf/'
 
@@ -22,7 +21,7 @@ const ProductItem = props => {
 
   return (
     <Card style={{ marginBottom: '1rem' }}>
-      <div className="product-item">
+      <div >
         <h2 className='is-fav'>{props.fileName}</h2>
         <button
           onClick={onButtonClick}
@@ -34,4 +33,4 @@ const ProductItem = props => {
   );
 };
 
-export default ProductItem;
+export default InvoiceItem;

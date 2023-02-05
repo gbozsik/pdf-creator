@@ -1,9 +1,9 @@
 import React from 'react';
 
-import Ingredients from './components/Ingredients/Ingredients';
+import PdfGenerator from './components/PdfGenerator/PdfGenerator';
 
 const App = props => {
-  return <Ingredients />;
+  return <PdfGenerator />;
 };
 
 export default App;
