@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 import org.springframework.util.ResourceUtils
 import java.io.File
 import java.io.FileOutputStream
+import java.time.LocalDateTime
 import java.util.*
 import java.util.stream.Stream
 
@@ -20,24 +21,45 @@ class PdfGeneratorService {
     fun createPdf(invoices: List<Invoice>): PdfResponse {
 
         val document = Document()
-        val fileName = "a.pdf"
+        val fileName = "Invoice_${LocalDateTime.now()}"
         val filePath = String.format("%s/%s", getUploadDirectory(), fileName)
         val outFile = FileOutputStream(filePath)
         PdfWriter.getInstance(document, outFile)
 
         document.open()
         val font = FontFactory.getFont(FontFactory.COURIER, 16f, BaseColor.BLACK)
-        val chunk = Chunk("Hello World", font)
-        document.add(chunk)
+        val chunk = Chunk("Invoice", font)
 
-        val table = PdfPTable(invoices.size)
+        document.add(Paragraph(chunk))
+        document.add(Paragraph(Chunk.NEWLINE))
+
+
+        val table = PdfPTable(2)
         addTableHeader(table)
         addRows(invoices, table)
+        addTotalAmountRow(invoices, table)
         document.add(table)
 
         document.close()
 
-        return PdfResponse(UUID.randomUUID(), filePath)
+        return PdfResponse(UUID.randomUUID(), fileName)
+    }
+
+    private fun addTotalAmountRow(invoices: List<Invoice>, table: PdfPTable) {
+        val totalAmount: Double = invoices.stream()
+            .map { it.amount }
+            .reduce { amount, amount2 -> amount + amount2 }
+            .orElse(0.0)
+
+        table.addCell(createTotalMountCell("Total amount"))
+        table.addCell(createTotalMountCell("$totalAmount"))
+    }
+
+    private fun createTotalMountCell(value: String): PdfPCell {
+        val cell = PdfPCell()
+        cell.borderWidth = 2f
+        cell.phrase = Phrase(value)
+        return cell
     }
 
     private fun addTableHeader(table: PdfPTable) {
@@ -53,13 +75,14 @@ class PdfGeneratorService {
 
     private fun addRows(invoices: List<Invoice>, table: PdfPTable) {
         invoices.forEach { invoice ->
-            table.addCell("${invoice.name}, ${invoice.amount}")
+            table.addCell(invoice.name)
+            table.addCell("${invoice.amount}")
         }
     }
 
     private fun getUploadDirectory(): String {
         val projectFolder = System.getProperty("user.dir")
-        val uploadsDir = String.format("%s/src/main/resources/public", projectFolder)
+        val uploadsDir = "$projectFolder/src/main/resources/public/"
         if (!File(uploadsDir).exists()) {
             File(uploadsDir).mkdir()
         }
@@ -67,7 +90,7 @@ class PdfGeneratorService {
     }
 
     fun getPdf(fileName: String): ByteArray {
-        val file: File = ResourceUtils.getFile("classpath:a.pdf")
+        val file: File = ResourceUtils.getFile("${getUploadDirectory()}$fileName")
         return file.readBytes()
     }
 }

@@ -1,70 +1,45 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 import ProductItem from '../Products/ProductItem';
-import IngredientForm from './IngredientForm';
-import IngredientList from './IngredientList';
 import ErrorModal from '../UI/ErrorModal';
-import Search from './Search';
 import axios from 'axios';
-import { DataGrid, GridColDef, gridColumnLookupSelector, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 const Ingredients = () => {
-  const [userIngredients, setUserIngredients] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [selectedRows, setSelectedRows] = useState([])
-  const [pdfUrl, setPdfUrl] = useState([])
-  const list = []
+  const [pdfNames, setPdfNames] = useState([])
 
   useEffect(() => {
-    console.log('RENDERING INGREDIENTS', userIngredients);
-  }, [userIngredients]);
+    console.log('RENDERING pdfNames', pdfNames);
+  }, [pdfNames]);
 
-  const filteredIngredientsHandler = useCallback(filteredIngredients => {
-    setUserIngredients(filteredIngredients);
-  }, []);
+  useEffect(() => {
+    console.log('RENDERING selected rows', selectedRows);
+  }, [selectedRows]);
+
+  // const filteredIngredientsHandler = useCallback(filteredIngredients => {
+  //   setUserIngredients(filteredIngredients);
+  // }, []);
 
   const addIngredientHandler = ingredient => {
-    setIsLoading(true);
-    const data = {
-      id: selectedRows[0].id,
-      amount: selectedRows[0].amount,
-      name: selectedRows[0].name,
-    };
-    console.log('data: ', data)
-    const arr = [data]
+    const arr = selectedRows.map(row => {
+      return {
+        id: row.id,
+        name: row.name,
+        amount: row.amount,
+      }
+    })
     axios.post('/pdf', arr)
     .then(response => {
       console.log('response: ', response.data);
-      // this.setState( { pdfUrls: [...this.state.pdfUrls, response.data] })
-      setPdfUrl(prevUrlList => [
+      setPdfNames(prevUrlList => [
         ...prevUrlList,
         { id: response.data.id, ...response.data }
       ])
-      console.log('response: state', pdfUrl);
-      list.push(response.data)
-      console.log('response: state list', list);
     })
     .catch(error => {
       console.log('error: ', error)
-    });
-  };
-
-  const removeIngredientHandler = ingredientId => {
-    setIsLoading(true);
-    fetch(
-      `https://react-hooks-update.firebaseio.com/ingredients/${ingredientId}.jon`,
-      {
-        method: 'DELETE'
-      }
-    ).then(response => {
-      setIsLoading(false);
-      setUserIngredients(prevIngredients =>
-        prevIngredients.filter(ingredient => ingredient.id !== ingredientId)
-      );
-    }).catch(error => {
-      setError('Something went wrong!');
-      setIsLoading(false);
     });
   };
 
@@ -95,14 +70,12 @@ const Ingredients = () => {
       checkboxSelection
       disableSelectionOnClick
       onSelectionModelChange={(ids) => {
+        console.log('ids: ', ids)
         const selectedIDs = new Set(ids);
         const selectedRowData = rows.filter((row) =>
           selectedIDs.has(row.id)
         );
         setSelectedRows(selectedRowData);
-        // this.setState( { selectedRows: selectedRowData } );
-        // console.log(selectedRowData);
-        console.log('selectedRows', selectedRows)
       }}
       />
       <button 
@@ -112,11 +85,12 @@ const Ingredients = () => {
         }}>Contained
       </button>
       <ul className="products-list">
-        {pdfUrl.map(prod => (
+        {pdfNames.map(pdfName => (
           <ProductItem
-            key={prod.id}
-            id={prod.id}
-            url={prod.url}
+            key={pdfName.id}
+            id={pdfName.id}
+            fileName={pdfName.fileName}
+            pdf={pdfNames[pdfName]}
           />
         ))}
       </ul>
